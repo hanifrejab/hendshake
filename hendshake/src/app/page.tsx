@@ -1,101 +1,180 @@
-import Image from "next/image";
+"use client";
+import { useState, useEffect } from "react";
 
-export default function Home() {
+interface Task {
+  activity: string;
+  price: number;
+  type: string;
+  bookingRequired: boolean;
+  accessibility: number;
+}
+
+export default function TodoList() {
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [activity, setActivity] = useState("");
+  const [price, setPrice] = useState("");
+  const [type, setType] = useState("");
+  const [bookingRequired, setBookingRequired] = useState(false);
+  const [accessibility, setAccessibility] = useState(0.0);
+
+  useEffect(() => {
+    const storedTasks = localStorage.getItem("tasks");
+    const parsedTasks: Task[] = storedTasks ? JSON.parse(storedTasks) : [];
+    setTasks(parsedTasks);
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+  }, [tasks]);
+
+  const addTask = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activity.trim() || isNaN(Number(price)) || Number(price) <= 0) return;
+    const newTask: Task = {
+      activity,
+      price: Number(price),
+      type,
+      bookingRequired,
+      accessibility,
+    };
+    setTasks([...tasks, newTask]);
+    setActivity("");
+    setPrice("");
+    setType("");
+    setBookingRequired(false);
+    setAccessibility(0.0);
+  };
+
+  const removeTask = (index: number) => {
+    setTasks(tasks.filter((_, i) => i !== index));
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+    <div className="container mx-auto p-4">
+      <div className="flex justify-center items-center mb-4">
+        <h1 className="text-xl font-bold">HENDSHAKE</h1>
+      </div>
+      <div className="flex justify-center items-center mb-4">
+        <h1 className="text-xl font-bold">To-Do List</h1>
+      </div>
+      <form onSubmit={addTask} className="space-y-3 mb-4">
+        <label className="block">
+          <span className="font-semibold">Activity</span>
+          <input
+            type="text"
+            placeholder="Activity"
+            value={activity}
+            onChange={(e) => setActivity(e.target.value)}
+            className="border p-2 w-full rounded"
+          />
+        </label>
+        <div className="flex space-x-2">
+          <label className="w-1/2">
+            <span className="font-semibold">Price</span>
+            <input
+              type="number"
+              placeholder="Price"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              className="border p-2 w-full rounded"
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+          </label>
+          <label className="w-1/2">
+            <span className="font-semibold">Type</span>
+            <select
+              value={type}
+              onChange={(e) => setType(e.target.value)}
+              className="border p-2 w-full rounded"
+            >
+              {[
+                "Education",
+                "Recreational",
+                "Social",
+                "Diy",
+                "Charity",
+                "Cooking",
+                "Relaxation",
+                "Music",
+                "Busywork",
+              ].map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+        <label className="flex items-center space-x-2">
+          <input
+            type="checkbox"
+            checked={bookingRequired}
+            onChange={() => setBookingRequired(!bookingRequired)}
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
+          <span>Booking Required</span>
+        </label>
+        <label className="block">
+          <span>Accessibility: {accessibility}</span>
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.1"
+            value={accessibility}
+            onChange={(e) => setAccessibility(parseFloat(e.target.value))}
+            className="w-full"
           />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        </label>
+        <div className="flex justify-center items-center">
+          <button
+            type="submit"
+            className="bg-blue-500 text-white px-4 py-2 rounded"
+          >
+            Submit
+          </button>
+        </div>
+      </form>
+      <div className="flex justify-center items-center mb-4">
+        <h1 className="text-xl font-bold">Item List</h1>
+      </div>
+      <div className="flex justify-between items-center mb-4">
+        <span className="font-semibold">List Item</span>
+        <span className="font-semibold">{tasks.length} items</span>
+      </div>
+      <ul>
+        {tasks.map((task, index) => (
+          <li
+            key={index}
+            className="border p-2 flex justify-between items-center"
+          >
+            <div>
+              <div>
+                <strong>Activity:</strong> {task.activity}
+              </div>
+              <div className="flex space-x-4">
+                <div>
+                  <strong>Price:</strong> RM {task.price}
+                </div>
+                <div>
+                  <strong>Type:</strong> {task.type}
+                </div>
+              </div>
+              <div>
+                <strong>Booking Required:</strong>{" "}
+                {task.bookingRequired ? "Yes" : "No"}
+              </div>
+              <div>
+                <strong>Accessibility:</strong> {task.accessibility}
+              </div>
+            </div>
+            <button
+              onClick={() => removeTask(index)}
+              className="bg-red-500 text-white px-2 py-1 rounded"
+            >
+              Delete
+            </button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
